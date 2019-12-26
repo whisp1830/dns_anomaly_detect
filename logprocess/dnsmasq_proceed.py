@@ -1,3 +1,4 @@
+import os
 import pymysql
 from kafka import KafkaProducer
 from tld import get_fld
@@ -30,6 +31,8 @@ connection = pymysql.connect(host='localhost',
                              charset='utf8')
 print ("数据库连接成功")
 cursor = connection.cursor()
+
+os.system(" wget http://idpsys.xyz:88/dnsmasq.log")
 
 with open("dnsmasq.log","r") as f:
     query_list = []
@@ -79,4 +82,5 @@ with open("dnsmasq.log","r") as f:
     cursor.executemany('INSERT INTO `replies`(`reply_time`, `reply_domain`, `reply_answer`) VALUES(%s, %s, %s)', reply_list)
     connection.commit()
 
+os.system(" rm dnsmasq.log")
         

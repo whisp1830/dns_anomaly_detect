@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="main" style="width:400px;height:400px"></div>
+  </div>
+  <script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts-en.common.js"></script>
+  <script>
+    var myChart = echarts.init(document.getElementById('main'));
+    var option = {
+      color: ['#CD5C5C', '#00CED1', '#9ACD32'],
+      series: [
+        {
+          type: 'pie',
+          radius: '70%', // 设置环形饼状图， 第一个百分数设置内圈大小，第二个百分数设置外圈大小
+          center: ['50%', '50%'], // 设置饼状图位置，第一个百分数调水平位置，第二个百分数调垂直位置
+          data: [
+            { value: 30, name: 'Dry' },
+            { value: 60, name: 'Wet' },
+            { value: 10, name: 'C&T' },
+          ],
+          itemStyle: {
+            emphasis: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(128, 128, 128, 0.5)'
+            }
+          }
+        }
+      ]
+    };
+    myChart.setOption(option);
+  </script>
+</body>
+
+</html>
