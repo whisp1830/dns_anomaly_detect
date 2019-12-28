@@ -23,6 +23,23 @@
 
         // 指定图表的配置项和数据
         var option = {
+          title: {
+                text: 'DNS流量走势变化'
+            },
+          dataZoom: [
+                {
+                    id: 'dataZoomX',
+                    type: 'slider',
+                    xAxisIndex: [0],
+                    filterMode: 'filter'
+                },
+                {
+                    id: 'dataZoomY',
+                    type: 'slider',
+                    yAxisIndex: [0],
+                    filterMode: 'empty'
+                }
+            ],
           xAxis: {
               type: 'category',
               data: data.dates

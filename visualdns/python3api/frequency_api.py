@@ -18,9 +18,8 @@ class TrendHandler(tornado.web.RequestHandler):
             "amounts" : []
         }
         for c in con:
-            if date in c["traffic_duration"]:
-                res["dates"].append(c["traffic_duration"])
-                res["amounts"].append(c["total_amount"])
+            res["dates"].append(c["traffic_duration"])
+            res["amounts"].append(c["total_amount"])
         self.write(json.dumps(res))
 
 class DailyHandler(tornado.web.RequestHandler):
