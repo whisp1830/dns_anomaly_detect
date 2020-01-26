@@ -40,33 +40,34 @@ with open("dnsmasq.log","r") as f:
     raw_records = f.readlines()
     for record in raw_records:
         if "query" in record:
-            query_date = parser.parse(" ".join(record.split(" ")[:3]))
-            query_domain = record.split(" ")[5]
+            query_date = parser.parse(" ".join(record.split()[:3]))
+            query_domain = record.split()[5]
             query_fld = get_fld(query_domain, fail_silently=True, fix_protocol=True)
-            query_client_ip = record.split(" ")[-1]
+            query_client_ip = record.split()[-1]
             query_list.append((query_date, query_domain, query_fld, query_client_ip))
             '''
             future = producer.send('queries' , key= bytes(query_domain, encoding="utf-8"), 
                                     value= bytes(query_client_ip, encoding="utf-8"), partition= 0)
             '''
         elif "reply" in record:
-            reply_date = parser.parse(" ".join(record.split(" ")[:3]))
-            reply_domain = record.split(" ")[5]
-            reply_answer = record.split(" ")[-1]
+            reply_date = parser.parse(" ".join(record.split()[:3]))
+            reply_domain = record.split()[5]
+            reply_answer = record.split()[-1]
             reply_list.append((reply_date, reply_domain, reply_answer))
+            print (reply_date, reply_domain, reply_answer)
         elif "forwarded" in record:
-            forwarded_date = parser.parse(" ".join(record.split(" ")[:3]))
-            forwarded_domain = record.split(" ")[5]
-            forwarded_ns_server = record.split(" ")[-1]
+            forwarded_date = parser.parse(" ".join(record.split()[:3]))
+            forwarded_domain = record.split()[5]
+            forwarded_ns_server = record.split()[-1]
             try:
                 cursor.execute('INSERT INTO `forwarded`(`forwarded_time`, `forwarded_domain`, `forwarded_ns_server`) VALUES(%s, %s, %s)',
                 (forwarded_date, forwarded_domain, forwarded_ns_server))
             except:
                 pass
         elif "cached" in record:
-            cached_date = parser.parse(" ".join(record.split(" ")[:3]))
-            cached_domain = record.split(" ")[5]
-            cached_answer = record.split(" ")[-1]
+            cached_date = parser.parse(" ".join(record.split()[:3]))
+            cached_domain = record.split()[5]
+            cached_answer = record.split()[-1]
             try:
                 cursor.execute('INSERT INTO `cached`(`cached_time`, `cached_domain`, `cached_answer`) VALUES(%s, %s, %s)',
                 (cached_date, cached_domain, cached_answer))
@@ -75,7 +76,6 @@ with open("dnsmasq.log","r") as f:
         else:
             print (record)
     connection.commit()
-
 
     cursor.executemany('INSERT INTO `queries`(`query_time`, `query_domain`, `query_fld`, `query_client_ip`) VALUES(%s, %s, %s, %s)', query_list)
     connection.commit()
