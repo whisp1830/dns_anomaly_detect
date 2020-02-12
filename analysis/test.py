@@ -1,3 +1,14 @@
-import ip2region138
+import ip2region
 
-print (ip2region138.ip2region_138("93.46.8.90"))
+searcher = ip2region.Ip2Region("ip2Region.db")
+
+ips = []
+with open("distinctips.txt","r") as f: 
+    ips = f.readlines()
+
+for ip in ips:
+    ip = ip.strip().strip('"')
+    if ip: 
+        result = searcher.memorySearch(ip)
+        region = str(result['region'], encoding="utf-8")
+        print (ip + " " +region)
