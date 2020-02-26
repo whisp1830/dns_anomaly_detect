@@ -18,16 +18,18 @@ chrome_options.add_argument('--headless') #浏览器不提供可视化页面. li
 
 driver = webdriver.Chrome(chromedriver_path, options=chrome_options) 
 
+counter = 1
 with open(filename,"r") as f:
-    for _ in range(3):
-        url = f.readline().strip() 
+    url = f.readline().strip()
+    while counter < 20:
         driver.get("https://urlsec.qq.com/check.html?url=" + url)
-        time.sleep(3)
+        #time.sleep(1)
         soup = BeautifulSoup(driver.page_source,"lxml")
         res = soup.find('div', attrs={"class":"result"})
         if "危险" in str(res):
-            print (url + " 危险")
+                print (str(counter) + " /6000 " + url + " 危险")
         else:
-            print (url + " 安全")
-
+                print (str(counter) + " /6000 " + url + " 安全")
+        url = f.readline().strip()
+        counter += 1
 driver.quit()

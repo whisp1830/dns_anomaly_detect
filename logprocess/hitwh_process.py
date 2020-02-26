@@ -39,28 +39,34 @@ def log_parser(single_log : str):
     }
 
 def query_info_sql(info, cursor):
-    cursor.execute('''
-            INSERT INTO 
-            `queries`(`query_time`, `query_domain`, `query_fld`, 
-            `query_client_ip`, `client_type`)
-            VALUES(%s, %s, %s, %s, %s)
-            ''',(info['query_time'],
-            info['query_domain'],
-            info['query_fld'],
-            info['query_client_ip'],
-            info['client_type']))
+    try:
+        cursor.execute('''
+                INSERT INTO 
+                `queries`(`query_time`, `query_domain`, `query_fld`, 
+                `query_client_ip`, `client_type`)
+                VALUES(%s, %s, %s, %s, %s)
+                ''',(info['query_time'],
+                info['query_domain'],
+                info['query_fld'],
+                info['query_client_ip'],
+                info['client_type']))
+    except:
+        pass
 
 def reply_info_sql(info, cursor):
-    cursor.execute('''
-            INSERT INTO 
-            `replies`(`reply_time`, `reply_domain`,
-            `reply_cnames`, `reply_as`, `reply_aaaas`)
-            VALUES(%s, %s, %s, %s, %s)
-            ''',(info['query_time'],
-            info['query_domain'],
-            ";".join(info['reply_cnames']),
-            ";".join(info['reply_as']),
-            ";".join(info['reply_aaaas'])))
+    try:
+        cursor.execute('''
+                INSERT INTO 
+                `replies`(`reply_time`, `reply_domain`,
+                `reply_cnames`, `reply_as`, `reply_aaaas`)
+                VALUES(%s, %s, %s, %s, %s)
+                ''',(info['query_time'],
+                info['query_domain'],
+                ";".join(info['reply_cnames']),
+                ";".join(info['reply_as']),
+                ";".join(info['reply_aaaas'])))
+    except:
+        pass
 
 
 
@@ -76,7 +82,7 @@ if __name__ == "__main__":
     cursor = connection.cursor()
     with open("log20.log", "r") as f:
         single_log = f.readline()
-        while count < 100000:
+        while single_log:
             info = log_parser(single_log)
             reply_info_sql(info, cursor)
             query_info_sql(info, cursor)
@@ -84,5 +90,5 @@ if __name__ == "__main__":
             single_log = f.readline()
             if count % 1000 == 0:
                 connection.commit()
-                print (count)
+                print (count,"/1300000")
         connection.commit()

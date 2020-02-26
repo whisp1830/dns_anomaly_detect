@@ -11,8 +11,15 @@ cursor = connection.cursor()
 cursor.execute('''
     SELECT DISTINCT query_fld
     FROM queries
+    WHERE query_fld NOT IN
+    (
+        SELECT domain FROM
+        domain_white_list
+    )
     ''')
 
 distinct_fld = cursor.fetchall()
-for i in distinct_fld:
-    print (i[0])
+
+with open("tobechecked.txt", "w") as f:
+    for i in distinct_fld:
+        f.write(i[0] + "\n")
