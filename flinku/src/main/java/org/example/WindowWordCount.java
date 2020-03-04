@@ -38,7 +38,7 @@ public class WindowWordCount {
                     }
                 }
         ).keyBy(1)
-//                .timeWindow(Time.seconds(10))
+                .timeWindow(Time.seconds(10))
                 .sum(2);
 
         //counts.print();

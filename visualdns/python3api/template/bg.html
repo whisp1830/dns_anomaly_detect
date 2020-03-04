@@ -17,7 +17,7 @@
 
     $.ajax({
       type: "get",
-      url: "http://127.0.0.1:8888/trend",
+      url: "{{url}}" ,
       dataType: "json",
       success: function (data) {
 
@@ -68,6 +68,9 @@
     <th>域名</th>
     <th>访问次数</th>
     <th>总占比</th>
+    <th>访问人数</th>
+    <th>平均访问次数</th>
+    <th>活跃子域名</th>
     <th>已知信息</th>
   </tr>
   <tr>
@@ -78,10 +81,40 @@
   </tr>
   {% for r in tmp["content"] %}
   <tr>
+    {% if r["type"] == "知名域名" %}
+      <td><font color="green">{{r["name"]}}</font></td>
+      <td><font color="green">{{r["value"]}}</font></td>
+      <td><font color="green">{{r["ratio_cap"]}}</font></td>
+      <td><font color="green">{{r["visitors"]}}</font></td>
+      <td><font color="green">{{r["ratio_avg"]}}</font></td>
+      <td><font color="green">{{r["sub_domains"]}}</font></td>
+      <td><font color="green">{{r["type"]}}</font></td>
+    {% elif r["type"] == "有害域名" %}
+      <td><font color="#610B0B">{{r["name"]}}</font></td>
+      <td><font color="#610B0B">{{r["value"]}}</font></td>
+      <td><font color="#610B0B">{{r["ratio_cap"]}}</font></td>
+      <td><font color="#610B0B">{{r["visitors"]}}</font></td>
+      <td><font color="#610B0B">{{r["ratio_avg"]}}</font></td>
+      <td><font color="#610B0B">{{r["sub_domains"]}}</font></td>
+      <td><font color="#610B0B">{{r["type"]}}</font></td>
+    {% elif r["type"] == "可疑域名" %}
+      <td><font color="#FF5733">{{r["name"]}}</font></td>
+      <td><font color="#FF5733">{{r["value"]}}</font></td>
+      <td><font color="#FF5733">{{r["ratio_cap"]}}</font></td>
+      <td><font color="#FF5733">{{r["visitors"]}}</font></td>
+      <td><font color="#FF5733">{{r["ratio_avg"]}}</font></td>
+      <td><font color="#FF5733">{{r["sub_domains"]}}</font></td>
+      <td><font color="#FF5733">{{r["type"]}}</font></td>
+    {% else %}
     <td>{{r["name"]}}</td>
     <td>{{r["value"]}}</td>
-    <td>{{r["ratio"]}}</td>
+    <td>{{r["ratio_cap"]}}</td>
+    <td>{{r["visitors"]}}</td>
+    <td>{{r["ratio_avg"]}}</td>
+    <td>{{r["sub_domains"]}}</td>
     <td>{{r["type"]}}</td>
+    {% end %}
+
   </tr>
   {% end %}
 </table>

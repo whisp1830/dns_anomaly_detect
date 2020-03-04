@@ -6,7 +6,7 @@ from tld import get_fld
 from dateutil import parser
 
 #producer = KafkaProducer(bootstrap_servers=['localhost:9092'])
-'''
+
 connection = pymysql.connect(host='localhost',
                              port=3306,
                              user='root',
@@ -19,15 +19,15 @@ connection = psycopg2.connect(host='pgm-bp1u51siu56415z7oo.pg.rds.aliyuncs.com',
                              user='whisp',
                              password='@Cty0807al',
                              database='dns_flow')
+'''
 print ("数据库连接成功")
 cursor = connection.cursor()
-query_flag = input("将查询信息写入数据库吗")
-reply_flag = input("将查询结果写入数据库吗")
-cache_flag = input("将查询缓存写入数据库吗")
 
-#os.system(" wget http://idpsys.xyz:88/dnsmasq.log")
+cursor.execute("SELECT MAX(query_time) FROM queries ")
+last_date = cursor.fetchone()[0]
+print (type(last_date))
 
-with open("dnsmasq.log","r") as f:
+with open("masq.log","r") as f:
     query_list = []
     reply_list = []
     last_query_date, last_query_domain = "",""
@@ -35,12 +35,17 @@ with open("dnsmasq.log","r") as f:
     for record in raw_records:
         if "query" in record:
             query_date = parser.parse(" ".join(record.split()[:3]))
+            if last_date and query_date <= last_date:
+                continue
+            print (query_date)
             query_domain = record.split()[5]
             if len(query_domain)>5 and query_domain[-5:] == ".arpa":
                 continue
             if last_query_date == query_date and last_query_domain == query_domain:
                 continue
             query_fld = get_fld(query_domain, fail_silently=True, fix_protocol=True)
+            if not query_fld:
+                query_fld = "INVALID"
             query_client_ip = record.split()[-1]
             query_list.append((query_date, query_domain, query_fld, query_client_ip))
             last_query_date, last_query_domain = query_date, query_domain
@@ -66,7 +71,7 @@ with open("dnsmasq.log","r") as f:
                 pass
         '''
 
-    cursor.executemany('INSERT INTO "queries"("query_time", "query_domain", "query_fld", "query_client_ip") VALUES(%s, %s, %s, %s)', query_list)
+    cursor.executemany("INSERT INTO `queries`(query_time, query_domain, query_fld, query_client_ip) VALUES(%s, %s, %s, %s)", query_list)
     connection.commit()
     cursor.executemany('INSERT INTO `replies`(`reply_time`, `reply_domain`, `reply_answer`) VALUES(%s, %s, %s)', reply_list)
     connection.commit()
