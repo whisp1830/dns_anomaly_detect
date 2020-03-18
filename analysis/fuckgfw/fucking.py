@@ -7,10 +7,10 @@ res = set()
 
 for _ in range(1000):
     print (_)
-    myAnswers = myResolver.query("google.com", "A")
+    myAnswers = myResolver.query("xj8022.com", "A")
     for answer in myAnswers:
         res.add(answer)
 
-with open("fuckyouleatherman.txt","a") as f:
+with open("fuckyoufbx.txt","a") as f:
     for i in res:
         f.write( str(i) + "\n")

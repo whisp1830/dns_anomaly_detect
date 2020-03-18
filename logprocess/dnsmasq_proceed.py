@@ -25,7 +25,6 @@ cursor = connection.cursor()
 
 cursor.execute("SELECT MAX(query_time) FROM queries ")
 last_date = cursor.fetchone()[0]
-print (type(last_date))
 
 with open("masq.log","r") as f:
     query_list = []
