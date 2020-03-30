@@ -31,7 +31,16 @@ cursor.execute(sql)
 domain_white_list = set([i[0] for i in cursor.fetchall()])
 
 
-class DomainHandler(tornado.web.RequestHandler):
+class BaseHandler(tornado.web.RequestHandler):
+
+    def set_default_headers(self):
+        self.set_header("a","b")
+        self.set_header("Access-Control-Allow-Origin", "*") # 这个地方可以写域名
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+class DomainHandler(BaseHandler):
+
     def get(self):
         a = self.get_arguments("q")
         content = db.domain_control.find({
@@ -80,7 +89,7 @@ class DomainHandler(tornado.web.RequestHandler):
             res["active_sub_domains"].append(c["active_sub_domains"])
         self.write(json.dumps(res))
 
-class TrendHandler(tornado.web.RequestHandler):
+class TrendHandler(BaseHandler):
     def get(self,data):
         trend_date = parser.parse(data)
         content = db.hourly_analysis.find({
@@ -101,7 +110,7 @@ class TrendHandler(tornado.web.RequestHandler):
         
         self.write(json.dumps(res))
 
-class DailyPageHandler(tornado.web.RequestHandler):
+class DailyPageHandler(BaseHandler):
     def get(self,data):
         traffic_date = parser.parse(data)
         res = db.daily_analysis.find_one({'traffic_duration': traffic_date}, { "_id" :0})
@@ -110,6 +119,7 @@ class DailyPageHandler(tornado.web.RequestHandler):
         def divider(info, color):
             color.append(info)
         for i in res["top_domain"]:
+            limit = db.domain_control.find_one({'domain': i["domain"]})["limit"]
             known = ""
             i_fld = i["domain"]
             info = {
@@ -119,7 +129,7 @@ class DailyPageHandler(tornado.web.RequestHandler):
                     "visitors" : i["domain_visitors"],
                     "ratio_avg": str(i["domain_traffic"]/i["domain_visitors"]).split(".")[0],
                     "sub_domains": i["sub_domains"],
-                    "type" : ""
+                    "limit" : limit
             }
             if i_fld in domain_black_list and int(info["value"]) > 10:
                 info["type"] = "有害域名"
@@ -151,10 +161,9 @@ class DailyPageHandler(tornado.web.RequestHandler):
             "total" : res["total_amount"],
             "content" : red + orange + others
         }
-        url = "http://127.0.0.1:8888/trend/"+str(traffic_date).split()[0]
-        self.render("bg.html", tmp=final_info, url= url)
+        self.write(json.dumps(final_info))
 
-class HourlyPageHandler(tornado.web.RequestHandler):
+class HourlyPageHandler(BaseHandler):
     def get(self,data):
         traffic_date = parser.parse(data)
         print (traffic_date)
@@ -183,7 +192,7 @@ class HourlyPageHandler(tornado.web.RequestHandler):
             "total" : res["total_amount"],
             "content" : tmp
         }
-        self.render("bg.html", tmp=hehe)
+        self.write(json.dumps(tmp))
 
 
 if __name__ == "__main__":

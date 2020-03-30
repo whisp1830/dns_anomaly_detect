@@ -19,8 +19,7 @@ public class WindowWordCount {
     public static void main(String[] args) throws Exception {
 
         AlertLine al = new AlertLine("hey");
-
-        System.out.println(al.getLine("baidu.com"));
+        
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 

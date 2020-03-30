@@ -2,6 +2,7 @@ import datetime
 import pymysql
 import pymongo
 import calendar
+import domain_limit
 from dateutil import parser
 
 client = pymongo.MongoClient('mongodb://localhost:27017/')
@@ -15,8 +16,6 @@ connection = pymysql.connect(host='localhost',
                             charset='utf8')
 print ("MySQL数据库连接成功")
 cursor = connection.cursor()
-
-
 
 def get_latest_hour():
     latest_hour = {}
@@ -58,7 +57,6 @@ def malicous_traffic_domain(start, end, duration_flag):
     cursor.execute(sql)
     res = cursor.fetchall()
     return res
-
 
 def top_traffic_domain_hour(query_date):
     start, end = str(query_date)+":00:00", str(datetime.timedelta(hours=1)+datetime.datetime.strptime(query_date, '%Y-%m-%d %H'))
@@ -112,7 +110,6 @@ def top_traffic_domain_hour(query_date):
         ]
     }
 
-
 def top_traffic_domain_day(query_date):
     print (query_date)
     start, end = query_date, str(datetime.timedelta(days=1)+datetime.datetime.strptime(query_date, '%Y-%m-%d')).split()[0]
@@ -162,7 +159,6 @@ def record_domain_control(query_date, infos, duration_flag):
         sql = "SELECT DISTINCT query_domain FROM queries_2020_01_07 WHERE query_fld=%s"
         cursor.execute(sql, domain)
         sub_domains = set([ i[0] for i in cursor.fetchall()])
-        print (duration_flag)
         if not has_previous_record:
             daily_history, hourly_history = [], []
             if duration_flag == "daily":
@@ -182,7 +178,7 @@ def record_domain_control(query_date, infos, duration_flag):
             res = {
                 "domain" : domain,
                 "sub_domains" : list(sub_domains),
-                "limit" : 1,
+                "limit" : traffic,
                 "daily_history": daily_history,
                 "hourly_history": hourly_history,
             }
@@ -196,23 +192,35 @@ def record_domain_control(query_date, infos, duration_flag):
                     "traffic": traffic,
                     "visitors": visitors,
                     "active_sub_domains": active_sub_domains}]
+                limit = domain_limit.calculate_traffic_limit(pre.limit, cur, [])
                 db.domain_control.update_one({"domain":domain}, 
-                                            {"$set":{
-                                                "sub_domains" : list(sub_domains),
-                                                "daily_history" : cur
-                                            }})
+                                        {"$set":{
+                                            "limit" : limit,
+                                            "sub_domains" : list(sub_domains),
+                                            "daily_history" : cur
+                                        }})
             elif duration_flag == "hourly":
                 cur = pre["hourly_history"] + [{
                     "traffic_duration": query_date, 
                     "traffic": traffic,
                     "visitors": visitors,
                     "active_sub_domains": active_sub_domains}]
+                limit = domain_limit.calculate_traffic_limit(pre["limit"], [], cur)
                 db.domain_control.update_one({"domain":domain}, 
-                                            {"$set":{
-                                                "sub_domains" : list(sub_domains),
-                                                "hourly_history" : cur
-                                            }})  
+                                        {"$set":{
+                                            "limit" : limit,
+                                            "sub_domains" : list(sub_domains),
+                                            "hourly_history" : cur
+                                        }})
 
+def record_malicious_domains(cursor):
+    sql = "SELECT domain FROM domain_black_list"
+    cursor.execute(sql)
+    malicious_domains = cursor.fetchall()
+    for domain in malicious_domains:
+        domain = domain[0]
+        pass
+        
 def insert_hourly_data_into_mongodb(cursor):
     sql = "SELECT DISTINCT DATE_FORMAT(query_time, '%%Y-%%m-%%d %%H') FROM queries_2020_01_07 WHERE query_time >'%s'"%str(datetime.timedelta(hours=1)+datetime.datetime.strptime(get_latest_hour(), '%Y-%m-%d %H'))
     cursor.execute(sql)
@@ -233,18 +241,6 @@ def insert_daily_data_into_mongodb(cursor):
     if res:
         pass
         db.daily_analysis.insert_many(res)
-
-     
-
-def record_malicious_domains():
-    sql = "SELECT domain FROM domain_black_list"
-    cursor.execute(sql)
-    malicious_domains = cursor.fetchall()
-    for domain in malicious_domains:
-        domain = domain[0]
-        
-
-    
 
 if __name__ == "__main__":
     insert_daily_data_into_mongodb(cursor)

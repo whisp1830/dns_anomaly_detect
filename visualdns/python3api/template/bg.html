@@ -69,9 +69,10 @@
     <th>访问次数</th>
     <th>总占比</th>
     <th>访问人数</th>
-    <th>平均访问次数</th>
+    <th>平均访问次数\阈值</th>
     <th>活跃子域名</th>
     <th>已知信息</th>
+    <th></th>
   </tr>
   <tr>
     <td>总计</td>
@@ -82,29 +83,30 @@
   {% for r in tmp["content"] %}
   <tr>
     {% if r["type"] == "知名域名" %}
-      <td><font color="green">{{r["name"]}}</font></td>
-      <td><font color="green">{{r["value"]}}</font></td>
-      <td><font color="green">{{r["ratio_cap"]}}</font></td>
-      <td><font color="green">{{r["visitors"]}}</font></td>
-      <td><font color="green">{{r["ratio_avg"]}}</font></td>
-      <td><font color="green">{{r["sub_domains"]}}</font></td>
-      <td><font color="green">{{r["type"]}}</font></td>
+      <td style="background-color: green">{{r["name"]}}</td>
+      <td style="background-color: green">{{r["value"]}}\{{r["limit"]}}</td>
+      <td style="background-color: green">{{r["ratio_cap"]}}</td>
+      <td style="background-color: green">{{r["visitors"]}}</td>
+      <td style="background-color: green">{{r["ratio_avg"]}}</td>
+      <td style="background-color: green">{{r["sub_domains"]}}</td>
+      <td style="background-color: green">{{r["type"]}}</td>
     {% elif r["type"] == "有害域名" %}
-      <td><font color="#610B0B">{{r["name"]}}</font></td>
-      <td><font color="#610B0B">{{r["value"]}}</font></td>
-      <td><font color="#610B0B">{{r["ratio_cap"]}}</font></td>
-      <td><font color="#610B0B">{{r["visitors"]}}</font></td>
-      <td><font color="#610B0B">{{r["ratio_avg"]}}</font></td>
-      <td><font color="#610B0B">{{r["sub_domains"]}}</font></td>
-      <td><font color="#610B0B">{{r["type"]}}</font></td>
+      <td style="background-color: red">{{r["name"]}}</td>
+      <td style="background-color: red">{{r["value"]}}</td>
+      <td style="background-color: red">{{r["ratio_cap"]}}</td>
+      <td style="background-color: red">{{r["visitors"]}}</td>
+      <td style="background-color: red">{{r["ratio_avg"]}}</td>
+      <td style="background-color: red">{{r["sub_domains"]}}</td>
+      <td style="background-color: red">{{r["type"]}}</td>
+      <td style="background-color: white">移除该域名</td>
     {% elif r["type"] == "可疑域名" %}
-      <td><font color="#FF5733">{{r["name"]}}</font></td>
-      <td><font color="#FF5733">{{r["value"]}}</font></td>
-      <td><font color="#FF5733">{{r["ratio_cap"]}}</font></td>
-      <td><font color="#FF5733">{{r["visitors"]}}</font></td>
-      <td><font color="#FF5733">{{r["ratio_avg"]}}</font></td>
-      <td><font color="#FF5733">{{r["sub_domains"]}}</font></td>
-      <td><font color="#FF5733">{{r["type"]}}</font></td>
+      <td style="background-color: yellow">{{r["name"]}}</td>
+      <td style="background-color: yellow">{{r["value"]}}</td>
+      <td style="background-color: yellow">{{r["ratio_cap"]}}</td>
+      <td style="background-color: yellow">{{r["visitors"]}}</td>
+      <td style="background-color: yellow">{{r["ratio_avg"]}}</td>
+      <td style="background-color: yellow">{{r["sub_domains"]}}</td>
+      <td style="background-color: yellow">{{r["type"]}}</td>
     {% else %}
     <td>{{r["name"]}}</td>
     <td>{{r["value"]}}</td>

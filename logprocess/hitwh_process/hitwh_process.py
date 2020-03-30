@@ -25,11 +25,11 @@ def log_parser(single_log : str, last_info: tuple):
     
     last_info = (query_time, query_domain, query_client_ip)
 
-
+    '''
     sending = str(query_time.strftime('%s')) + " " + query_domain
     future = producer.send('queries', value= bytes(sending, encoding="utf-8"), partition= 0)
-    print ("发送成功")
     print (sending)
+    '''
 
     try:
         query_fld = get_fld(query_domain, fail_silently=True, fix_protocol=True)
@@ -37,9 +37,9 @@ def log_parser(single_log : str, last_info: tuple):
             query_fld = "INVALID"
         elif len(query_fld) > 45:
             query_fld = query_fld[-45:]
-            #sending = str(query_time.strftime('%s')) + " " + query_fld + " " + query_domain
-            #print (sending)
-            #future = producer.send('sub_domains', value= bytes(sending, encoding="utf-8"), partition= 0)
+        sending = str(query_time.strftime('%s')) + " " + query_fld + " " + query_domain
+        print (sending)
+        future = producer.send('sub_domains', value= bytes(sending, encoding="utf-8"), partition= 0)
     except:
         query_fld = "INVALID"
 
