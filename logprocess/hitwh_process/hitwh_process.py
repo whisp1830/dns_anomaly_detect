@@ -8,6 +8,31 @@ from tld import get_fld
 
 producer = kafka.KafkaProducer(bootstrap_servers=['localhost:9092'])
 
+connection = pymysql.connect(host='localhost',
+                        port=3306,
+                        user='root',
+                        password='',
+                        database='dns_flow')
+cursor = connection.cursor()
+print ("数据库连接成功")
+
+
+def feed_kafka_query(query_time, query_fld, query_domain, query_client_ip):
+    sending = str(query_time.strftime('%s')) + " " + query_fld + " " + query_domain + " " + query_client_ip
+    future = producer.send('queries', value= bytes(sending, encoding="utf-8"), partition= 0)
+    print (sending)
+
+def feed_kafka_reply(info):
+    sending = str(query_time.strftime('%s')) + " " + query_domain
+    future = producer.send('queries', value= bytes(sending, encoding="utf-8"), partition= 0)
+    print (sending)
+
+def judge_long_domain(domain):
+    '''
+    判断一个长域名是否可疑，主要根据二级域或人工标记
+    '''
+    return True
+
 def log_parser(single_log : str, last_info: tuple):
     '''
     将原始日志str解析为 query_info, reply_info 对象
@@ -18,6 +43,7 @@ def log_parser(single_log : str, last_info: tuple):
     query_client_ip = single_log[5]
     #client_type = single_log[8].strip(";") #客户端身份，教师或学生
     query_domain = single_log[9]
+
     if last_info[0] == query_time and last_info[1] == query_domain and last_info[2] == query_client_ip:
         return (), (), last_info
     if len(query_domain)>5 and query_domain[-5:] == ".arpa":
@@ -25,23 +51,15 @@ def log_parser(single_log : str, last_info: tuple):
     
     last_info = (query_time, query_domain, query_client_ip)
 
-    '''
-    sending = str(query_time.strftime('%s')) + " " + query_domain
-    future = producer.send('queries', value= bytes(sending, encoding="utf-8"), partition= 0)
-    print (sending)
-    '''
-
     try:
         query_fld = get_fld(query_domain, fail_silently=True, fix_protocol=True)
         if not query_fld:
             query_fld = "INVALID"
         elif len(query_fld) > 45:
             query_fld = query_fld[-45:]
-        sending = str(query_time.strftime('%s')) + " " + query_fld + " " + query_domain
-        print (sending)
-        future = producer.send('sub_domains', value= bytes(sending, encoding="utf-8"), partition= 0)
     except:
         query_fld = "INVALID"
+    feed_kafka_query(query_time, query_fld, query_domain, query_client_ip)
 
     reply_cnames, reply_as, reply_aaaas, reply_others = "", "", "", ""
     try:
@@ -63,7 +81,7 @@ def log_parser(single_log : str, last_info: tuple):
             last_info
 
 
-def create_new_table(date, cursor):
+def create_new_table(date):
     sql = "DROP TABLE IF EXISTS `queries_%s`;"%date
     cursor.execute(sql)
     sql = '''
@@ -89,10 +107,6 @@ def query_info_sql(info, cursor):
     answer_table_name = "replies_" + date
     sql = "INSERT INTO "+ query_table_name + "(query_time, query_domain, query_fld, query_client_ip) VALUES(%s, %s, %s, %s)"
     cursor.executemany(sql, info)
-    
-def reply_info_kfk(info):
-    sending = str(query_time.strftime('%s')) + " " + query_domain
-    future = producer.send('queries', value= bytes(sending, encoding="utf-8"), partition= 0)
 
 def get_distinct_fld(date, cursor):
     sql = "SELECT DISTINCT query_fld FROM queries_"+date+" WHERE query_fld NOT IN "\
@@ -106,18 +120,11 @@ if __name__ == "__main__":
     enable_kafka = False
     enable_bloom_filter = False
 
-    connection = pymysql.connect(host='localhost',
-                            port=3306,
-                            user='root',
-                            password='',
-                            database='dns_flow')
-    print ("数据库连接成功")
 
     print (time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     domain_filter = BloomFilter(max_elements=10000000, error_rate=0.1, filename="test.test")
     count = 0
     date = ""
-    cursor = connection.cursor()
     with open("log20.log", "r") as f:
         count = 0
         single_log = f.readline()
