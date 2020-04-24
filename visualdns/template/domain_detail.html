@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{info["name"]}}详细信息</title>
+  <!-- 引入 echarts.js -->
+  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+  <script src="/static/echarts.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <div id="main1" style="height:400px;"></div>
+    </div>
+  <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+  <script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart1 = echarts.init(document.getElementById('main1'));
+
+
+    $.ajax({
+      type: "get",
+      url: "{{url}}" ,
+      dataType: "json",
+      success: function (data) {
+
+        // 指定图表的配置项和数据
+        var option = {
+          title: {
+                text: '{{info["name"]}}流量走势'
+            },
+          dataZoom: [
+                {
+                    id: 'dataZoomX',
+                    type: 'slider',
+                    xAxisIndex: [0],
+                    filterMode: 'filter'
+                },
+                {
+                    id: 'dataZoomY',
+                    type: 'slider',
+                    yAxisIndex: [0],
+                    filterMode: 'empty'
+                }
+            ],
+          xAxis: {
+              type: 'category',
+              data: data.dates
+          },
+          yAxis: {
+              type: 'value',
+
+          },
+          series: [{
+              data: data.traffic,
+              type: 'line',
+              smooth: true
+          }]
+      };
+      console.log(data.traffic);
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart1.setOption(option);
+      },
+      error: function () {
+        alert('Error: ajax 请求出错！')
+      }
+    });
+</script>
+    <div class="col-md-6">
+      <div id="main2" style="height:400px;"></div>
+    </div>
+  </div>
+
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var myChart2 = echarts.init(document.getElementById('main2'));
+
+
+  $.ajax({
+    type: "get",
+    url: "{{url}}" ,
+    dataType: "json",
+    success: function (data) {
+
+      // 指定图表的配置项和数据
+      var option = {
+        title: {
+              text: '{{info["name"]}}独立访问者变化'
+          },
+        dataZoom: [
+              {
+                  id: 'dataZoomX',
+                  type: 'slider',
+                  xAxisIndex: [0],
+                  filterMode: 'filter'
+              },
+              {
+                  id: 'dataZoomY',
+                  type: 'slider',
+                  yAxisIndex: [0],
+                  filterMode: 'empty'
+              }
+          ],
+        xAxis: {
+            type: 'category',
+            data: data.dates
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: data.visitors,
+            type: 'line',
+            smooth: true
+        }]
+    };
+
+
+      // 使用刚指定的配置项和数据显示图表。
+      myChart2.setOption(option);
+    },
+    error: function () {
+      alert('Error: ajax 请求出错！')
+    }
+  });
+</script>
+<div class="row">
+    <div class="col-md-2">
+      <legend>检测结果</legend>
+      <div>{{info["type"]}}</div>
+    </div>
+    <div class="col-md-2">
+      <legend>详细信息</legend>
+      <div>{{info["note"]}}</div>
+    </div>    
+    <div class="col-md-2">
+      <legend>首次发现时间</legend>
+      <div>{{info["first_seen_time"]}}</div>
+    </div>  
+    <div class="col-md-2"> 
+        <legend>访问量阈值</legend>
+        <div>{{info["traffic_limit"]}}</div>
+    </div>   
+    <div class="col-md-2">   
+        <legend>活跃子域名阈值</legend>
+        <div>{{info["subdomain_limit"]}}</div>
+    </div>
+    <div>
+        <legend>独立访问人数阈值</legend>
+        <div>{{info["visitor_limit"]}}</div>
+    </div>
+</div>
+</br>
+<legend>域名访问上下文</legend></br>
+<a>根据局部性原理，一次危险域名访问产生时，其前后访问的域名大概率可能为危险域名</a>
+<div class="row">
+    {% for c in info["context"][:6] %}
+    <div class="col-md-4">
+      <ul class="list-group">
+        {% for cc in c%}
+        <li class="list-group-item">{{str(cc[0])}}  {{str(cc[1])}}</li>
+        {% end %}
+      </ul>
+    </div>
+    {% end %}
+</div>
+</br>
+<div class="col-md-6">
+<legend>已出现的子域名</legend>
+{% for s in info["sub_domains"]%}
+<div> {{s}}</div>
+{%end%}
+</div>
+
+<div class="col-md-6">
+<legend>旗下IP地址</legend>
+{% for s in info["ips"] %}
+<div><a href="/host/{{s}}"  target="_blank">{{s}}</a></div>
+{% end %}
+</div>
+</div>
+</body>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ops-coffee</title>
+  <!-- 引入 echarts.js -->
+  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+  <script src="/static/echarts.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+</head>
+<body>
+  <div class="row">
+    <div class="col-md-6">
+      <div id="main1" style="height:400px;"></div>
+    </div>
+    <div class="col-md-6">
+      <div id="main2" style="height:400px;"></div>
+    </div>
+  </div>
+
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main2'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '本时段域名类型比例'
+            },
+            tooltip: {},
+            series: [{
+                type: 'pie',
+                color:[
+                  'green', 'grey', 'red', 'orange'
+                ],
+                data: [
+                  { 
+                    value:{{tmp["green_total"]}}, 
+                    name:'安全域名'
+                  },
+                  {
+                    value:{{tmp["black_total"]}},
+                    name:'未知域名'
+                  }, 
+                  {
+                    value:{{tmp["red_total"]}}, 
+                    name: '危险域名'
+                  },
+                  {
+                    value:{{tmp["orange_total"]}},
+                    name: '可疑域名'
+                  }   
+                ]
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+  <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+  <script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart1 = echarts.init(document.getElementById('main1'));
+
+
+    $.ajax({
+      type: "get",
+      url: "{{url}}" ,
+      dataType: "json",
+      success: function (data) {
+
+        // 指定图表的配置项和数据
+        var option = {
+          title: {
+                text: '本日DNS流量走势变化'
+            },
+          dataZoom: [
+                {
+                    id: 'dataZoomX',
+                    type: 'slider',
+                    xAxisIndex: [0],
+                    filterMode: 'filter'
+                },
+                {
+                    id: 'dataZoomY',
+                    type: 'slider',
+                    yAxisIndex: [0],
+                    filterMode: 'empty'
+                }
+            ],
+          xAxis: {
+              type: 'category',
+              data: data.dates
+          },
+          yAxis: {
+              type: 'value'
+          },
+          series: [{
+              data: data.amounts,
+              type: 'line',
+              smooth: true
+          }]
+      };
+
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart1.setOption(option);
+      },
+      error: function () {
+        alert('Error: ajax 请求出错！')
+      }
+    });
+  </script>
+  <div class="row">
+    <div class="col-md-6">
+      <form id="search" method="post" action="/search">
+        <input type="text" class="form-control" placeholder="Text input">
+        <button class="btn btn-default" type="submit">Button</button>
+      </form>
+    </div>
+  </div>
+
+<h2>本时段流量TOP500域名</h2>
+<table class="sortable table table-hover">
+  <tr>
+    <th>域名</th>
+    <th>访问次数</th>
+    <th>总占比</th>
+    <th>访问人数</th>
+    <th>平均访问次数\阈值</th>
+    <th>活跃子域名</th>
+    <th>已知信息</th>
+    <th></th>
+  </tr>
+  <tr>
+    <td>总计</td>
+    <td>{{tmp["total"]}}</td>
+    <td></td>
+    <td></td>
+  </tr>
+  {% for r in tmp["content"] %}
+    {% if r["type"] == "知名域名" %}
+      <tr class="success">
+    {% elif r["type"] == "有害域名" %}
+      <tr class="danger">
+    {% elif r["type"] == "可疑域名" %}
+      <tr class="warning">
+    {% else %}
+      <tr>
+    {% end %}
+        <td>{{r["name"]}}</td>
+        <td>{{r["value"]}}</td>
+        <td>{{r["ratio_cap"]}}</td>
+        <td>{{r["visitors"]}}</td>
+        <td>{{r["ratio_avg"]}}</td>
+        <td>{{r["type"]}}</td>
+      </tr>
+
+  {% end %}
+</table>
+</body>
+</html>

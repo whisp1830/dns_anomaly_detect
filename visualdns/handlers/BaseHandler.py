@@ -3,18 +3,18 @@ from pymongo import MongoClient
 import tornado.web
 
 class BaseHandler(tornado.web.RequestHandler):
-    def initialize(self):
-        connection = pymysql.connect(host='localhost',
-                            port=3306,
-                            user='root',
-                            password='',
-                            db='dns_flow',
-                            charset='utf8')
-        print ("MySQL数据库连接成功")
-        self.cursor = connection.cursor()
-        client = MongoClient('mongodb://localhost:27017/')
-        self.db = client['domain_frequency']
-        print ("MongoDB数据库连接成功")
+    def initialize(self, connectors):
+
+        self.cursor = connectors.cursor
+        self.db = connectors.db
+        self.domain_white_list = connectors.domain_white_list
+        self.white_note = connectors.white_note
+        self.domain_black_list = connectors.domain_black_list
+        self.black_note = connectors.black_note 
+        self.city_locate = connectors.city_locate
+        self.asn_locate = connectors.asn_locate
+
+
 
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*") # 这个地方可以写域名
